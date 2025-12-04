@@ -771,19 +771,44 @@
   // --- RENDER ---
   function renderToolbarLinks() {
     toolbarLinks.innerHTML = '';
-    const mainLinks = [
-      { t: '📐 Matemáticas', u: URLS.P_MATES },
-      { t: '📖 Lectura', u: URLS.P_LECTURA },
-      { t: '🌍 Sociales', u: URLS.P_SOCIALES },
-      { t: '🧬 Naturales', u: URLS.P_NATURALES },
-      { t: '🇬🇧 Inglés', u: URLS.P_INGLES },
-      { t: '📘 Guía 2025', u: URLS.GUIA_2025, highlight: true }
+    
+    // Definimos los grupos de enlaces
+    const links = [
+      // Generales
+      { t: '📘 Guía 2025', u: URLS.GUIA_2025, style: 'primary' },
+      { t: '📊 Infografía', u: URLS.INFOGRAFIA, style: 'default' },
+      
+      // Práctica (Separador visual si fuera necesario, pero usaremos estilos)
+      { t: '📐 Mates (Práctica)', u: URLS.P_MATES, style: 'default' },
+      { t: '📖 Lectura (Práctica)', u: URLS.P_LECTURA, style: 'default' },
+      { t: '🌍 Sociales (Práctica)', u: URLS.P_SOCIALES, style: 'default' },
+      { t: '🧬 Ciencias (Práctica)', u: URLS.P_NATURALES, style: 'default' },
+      { t: '🇬🇧 Inglés (Práctica)', u: URLS.P_INGLES, style: 'default' },
+
+      // Explicadas (Nuevos)
+      { t: '💡 Mates (Explicada)', u: URLS.E_MATES, style: 'explained' },
+      { t: '💡 Lectura (Explicada)', u: URLS.E_LECTURA, style: 'explained' },
+      { t: '💡 Sociales (Explicada)', u: URLS.E_SOCIALES, style: 'explained' },
+      { t: '💡 Ciencias (Explicada)', u: URLS.E_NATURALES, style: 'explained' },
+      { t: '💡 Inglés (Explicada)', u: URLS.E_INGLES, style: 'explained' }
     ];
-    mainLinks.forEach(item => {
+
+    links.forEach(item => {
       const a = document.createElement('a');
       a.className = 'caja-link';
       a.textContent = item.t;
-      if (item.highlight) { a.style.borderColor = '#2563eb'; a.style.color = '#2563eb'; }
+      
+      // Estilos personalizados según el tipo
+      if (item.style === 'primary') {
+        a.style.borderColor = '#2563eb'; 
+        a.style.color = '#2563eb';
+        a.style.fontWeight = '700';
+      } else if (item.style === 'explained') {
+        a.style.borderColor = '#16a34a'; 
+        a.style.color = '#15803d';
+        a.style.backgroundColor = '#f0fdf4';
+      }
+
       a.onclick = (e) => {
         e.preventDefault();
         openResource(item.u, item.t);
@@ -940,7 +965,9 @@
   }
 
   // --- HANDLERS ---
-  document.getElementById('btn-save-name').onclick = () => {
+  
+  // Lógica unificada para guardar el nombre
+  const saveName = () => {
     const nameInput = document.getElementById('input-name');
     const name = nameInput.value.trim();
     if (name) {
@@ -952,6 +979,16 @@
         nameInput.style.borderColor = 'var(--danger)';
     }
   };
+
+  // Evento Click del botón
+  document.getElementById('btn-save-name').onclick = saveName;
+
+  // Evento Enter en el input
+  document.getElementById('input-name').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      saveName();
+    }
+  });
 
   btnReset.addEventListener('click', () => modalReset.classList.add('open'));
   document.getElementById('modal-cancel').addEventListener('click', () => modalReset.classList.remove('open'));
