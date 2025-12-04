@@ -57,7 +57,7 @@
     cursor: pointer;
     transition: all 0.2s;
     display: inline-flex; align-items: center; gap: 6px;
-    text-decoration: none; /* For links styled as btns */
+    text-decoration: none;
   }
   .btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
   .btn-primary { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
@@ -196,7 +196,7 @@
     height: 90vh; /* Alto casi completo */
     display: flex;
     flex-direction: column;
-    padding: 0; /* Remove default padding for full content */
+    padding: 0;
   }
   .modal-header {
     padding: 12px 16px;
@@ -209,14 +209,16 @@
   .modal-header h3 { margin: 0; font-size: 1rem; color: var(--fg); text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   .modal-body {
     flex: 1;
-    background: #e2e8f0;
+    background: #f1f5f9;
     position: relative;
+    overflow: hidden;
   }
   .modal-body iframe {
     width: 100%;
     height: 100%;
     border: none;
     display: block;
+    background: white;
   }
   .modal-close {
     background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted); margin-left: 12px;
@@ -398,26 +400,25 @@
   // --- CONFIG ---
   const STORAGE_KEY = 'saber11_pro_v3';
   
-  // URLS CONSTANTES
+  // URLS CONSTANTES - LOCALES (Relativas a la carpeta icfes_material)
   const URLS = {
-    GUIA_2025: "https://www.icfes.gov.co/wp-content/uploads/2025/04/30-abril-guia-orientacion-saber-11o-2025-2.pdf",
-    INFOGRAFIA: "http://icfes.acendra.com.co/wp-content/uploads/2024/12/00_INFOGRAFIA_SABER_11.pdf",
+    GUIA_2025: "./icfes_material/30-abril-guia-orientacion-saber-11o-2025-2.pdf",
+    INFOGRAFIA: "./icfes_material/00_INFOGRAFIA_SABER_11.pdf",
     
-    P_LECTURA: "http://icfes.acendra.com.co/wp-content/uploads/2024/12/02_PRACTICA_LECTURA_CRITICA.pdf",
-    E_LECTURA: "http://icfes.acendra.com.co/wp-content/uploads/2024/12/01_EXPLICADAS_LECTURA_CRITICA.pdf",
+    P_LECTURA: "./icfes_material/02_PRACTICA_LECTURA_CRITICA.pdf",
+    E_LECTURA: "./icfes_material/01_EXPLICADAS_LECTURA_CRITICA.pdf",
     
-    P_MATES: "http://icfes.acendra.com.co/wp-content/uploads/2024/12/04_PRACTICA_MATEMATICAS.pdf",
-    E_MATES: "http://icfes.acendra.com.co/wp-content/uploads/2024/12/03_EXPLICADAS_MATEMATICAS.pdf",
+    P_MATES: "./icfes_material/04_PRACTICA_MATEMATICAS.pdf",
+    E_MATES: "./icfes_material/03_EXPLICADAS_MATEMATICAS.pdf",
     
-    P_SOCIALES: "http://icfes.acendra.com.co/wp-content/uploads/2024/12/06_PRACTICA_SOCIALES_Y_CIUDADANAS.pdf",
-    E_SOCIALES: "http://icfes.acendra.com.co/wp-content/uploads/2024/12/05_EXPLICADAS_SOCIALES_Y_CIUDADANAS.pdf",
+    P_SOCIALES: "./icfes_material/06_PRACTICA_SOCIALES_Y_CIUDADANAS.pdf",
+    E_SOCIALES: "./icfes_material/05_EXPLICADAS_SOCIALES_Y_CIUDADANAS.pdf",
     
-    // UPDATED NATURALES LINKS (Removed _NATURALES suffix per user request)
-    P_NATURALES: "http://icfes.acendra.com.co/wp-content/uploads/2024/12/08_PRACTICA_CIENCIAS.pdf",
-    E_NATURALES: "http://icfes.acendra.com.co/wp-content/uploads/2024/12/07_EXPLICADAS_CIENCIAS.pdf",
+    P_NATURALES: "./icfes_material/08_PRACTICA_CIENCIAS.pdf",
+    E_NATURALES: "./icfes_material/07_EXPLICADAS_CIENCIAS.pdf",
     
-    P_INGLES: "http://icfes.acendra.com.co/wp-content/uploads/2024/12/10_PRACTICA_INGLES.pdf",
-    E_INGLES: "http://icfes.acendra.com.co/wp-content/uploads/2024/12/09_EXPLICADAS_INGLES.pdf"
+    P_INGLES: "./icfes_material/10_PRACTICA_INGLES.pdf",
+    E_INGLES: "./icfes_material/09_EXPLICADAS_INGLES.pdf"
   };
 
   let confettiInterval;
@@ -601,11 +602,9 @@
       state = stored ? JSON.parse(stored) : {};
     } catch(e) { state = {}; }
     
-    // Check Name presence
     if (!state.userName) {
       setTimeout(() => modalWelcome.classList.add('open'), 500);
     }
-    // Initialize milestones trackers if missing
     if (typeof state.highestPercent === 'undefined') state.highestPercent = 0;
     if (!state.completedWeeks) state.completedWeeks = {};
   }
@@ -634,17 +633,33 @@
     setTimeout(() => toastEl.classList.remove('show'), 3000);
   }
   
-  // --- RESOURCE MODAL LOGIC ---
+  // --- RESOURCE MODAL LOGIC (FIXED) ---
   function openResource(url, title) {
     resTitle.textContent = title || 'Documento';
-    resFrame.src = url;
+    
+    // 1. Reset iframe content to blank to avoid stuck state
+    resFrame.src = 'about:blank';
+    
+    // 2. Load new URL after brief delay
+    setTimeout(() => {
+        resFrame.src = url;
+    }, 10);
+    
+    // 3. Robust "Open New Tab" handling
+    // Using onclick bypasses potential relative-path confusion in some browsers
+    resExtBtn.onclick = (e) => {
+        e.preventDefault();
+        window.open(url, '_blank');
+    };
+    // Keep href for right-click support
     resExtBtn.href = url;
+    
     modalResource.classList.add('open');
   }
   
   resClose.onclick = () => {
     modalResource.classList.remove('open');
-    resFrame.src = ''; // Stop loading/playing
+    resFrame.src = 'about:blank'; // Stop loading
   };
   
   // --- CELEBRATION LOGIC ---
@@ -769,12 +784,10 @@
       a.className = 'caja-link';
       a.textContent = item.t;
       if (item.highlight) { a.style.borderColor = '#2563eb'; a.style.color = '#2563eb'; }
-      // Click handler for modal
       a.onclick = (e) => {
         e.preventDefault();
         openResource(item.u, item.t);
       };
-      // Right click or ctrl click fallback
       a.href = item.u;
       a.target = '_blank';
       toolbarLinks.appendChild(a);
@@ -852,12 +865,11 @@
             const a = document.createElement('a');
             a.className = 'res-link';
             a.textContent = '🔗 ' + res.text;
-            // Click Handler
             a.onclick = (e) => {
                e.preventDefault();
                openResource(res.url, res.text);
             };
-            a.href = res.url; // Fallback
+            a.href = res.url;
             a.target = '_blank';
             resDiv.appendChild(a);
         });
